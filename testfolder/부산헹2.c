@@ -5,16 +5,40 @@
 
 #define LEN_MIN 15
 #define LEN_MAX 50
+#define STM_MIN 0
+#define STM_MAX 5
 #define PROB_MIN 10 
 #define PROB_MAX 90
+#define AGGRO_MIN 0
+#define AGGRO_MAX 5
 
-int main() {
-    int trainLen, prob;
-    int prevCitizenPos, prevZombiePos;
+#define MOVE_LEET 1
+#define MOVE_SRAY 0
 
-    srand(time(NULL));
+#define ATK_NONE 0
+#define ATK_CITIZEN 1
+#define ATK_DONGSEOK 2
 
-    // 인트로
+#define ACTION_REST 0
+#define ACTION_PROVOKE 1
+#define ACTION_PULL 2
+
+// 전역 변수 선언
+int trainLen, prob;
+int prevCitizenPos, prevZombiePos;
+int citizenMove, zombieMove;
+int zombieMoveCounter = 1;
+int citizenPos, zombiePos;
+
+void intro();
+int firsttrain(int, int);
+void move();
+void nexttrain();
+int state();  // 루프를 제어하기 위해 int 반환
+void outtro();
+
+void intro() {
+    // 인트로 메시지
     printf("**************************\n");
     printf("잠시 후 게임을 시작합니다.\n");
     printf("**************************\n");
@@ -25,6 +49,7 @@ int main() {
     printf("열차의 길이를 입력하세요 (%d에서 %d까지): ", LEN_MIN, LEN_MAX);
     scanf_s("%d", &trainLen);
 
+    // 입력 길이가 범위 밖이면 종료
     if (trainLen < LEN_MIN || trainLen > LEN_MAX) {
         printf("열차의 길이는 %d에서 %d까지만 가능합니다.\n", LEN_MIN, LEN_MAX);
         exit(1);
@@ -34,11 +59,14 @@ int main() {
     printf("확률을 입력하세요 (%d에서 %d까지): ", PROB_MIN, PROB_MAX);
     scanf_s("%d", &prob);
 
+    // 입력 확률이 범위 밖이면 종료
     if (prob < PROB_MIN || prob > PROB_MAX) {
         printf("확률은 %d에서 %d까지만 가능합니다.\n", PROB_MIN, PROB_MAX);
         exit(1);
     }
+}
 
+int firsttrain(int trainLen, int prob) {
     // 초기 열차 상태 출력
     for (int i = 0; i < trainLen; i++) {
         printf("#");
@@ -48,9 +76,66 @@ int main() {
     printf("#");
     for (int i = 1; i < trainLen - 1; i++) {
         if (i == trainLen - 6) {
-            printf("C");
+            printf("C");  // 시민 위치
         }
         else if (i == trainLen - 3) {
+            printf("Z");  // 좀비 위치
+        }
+        else if (i == trainLen - 2) {
+            printf("M");  // 목표 지점
+        }
+        else {
+            printf(" ");
+        }
+    }
+    printf("#\n");
+
+    for (int i = 0; i < trainLen; i++) {
+        printf("#");
+    }
+    printf("\n");
+
+    prevCitizenPos = trainLen - 6;
+    prevZombiePos = trainLen - 3;
+}
+
+void move() {
+    // 시민 이동
+    if (rand() % 100 < prob) {
+        citizenMove = 0;
+    }
+    else {
+        citizenMove = -1;
+    }
+    citizenPos = prevCitizenPos + citizenMove;
+
+    // 좀비 이동
+    if (zombieMoveCounter % 2 == 0) {
+        zombieMove = 0;
+    }
+    else {
+        if (rand() % 100 < prob) {
+            zombieMove = -1;
+        }
+        else {
+            zombieMove = 0;
+        }
+    }
+}
+
+void nexttrain() {
+    // 열차 상태 출력
+    for (int i = 0; i < trainLen; i++) {
+        printf("#");
+    }
+    printf("\n");
+
+    printf("#");
+    for (int i = 1; i < trainLen - 1; i++) {
+        if (i == citizenPos) {
+            printf("C");
+        }
+        else if (i == zombiePos) {
             printf("Z");
         }
         else if (i == trainLen - 2) {
@@ -66,113 +151,74 @@ int main() {
         printf("#");
     }
     printf("\n");
+}
 
-    prevCitizenPos = trainLen - 6;
-    prevZombiePos = trainLen - 3;
-
-    int zombieMoveCounter = 1;
-
-    while (1) {
-        // 시민 이동
-        int citizenMove;
-        if (rand() % 100 < prob) {
-            citizenMove = 0;
-        }
-        else {
-            citizenMove = -1;
-        }
-        int citizenPos = prevCitizenPos + citizenMove;
-
-        // 좀비 이동
-        int zombieMove;
-        if (zombieMoveCounter % 2 == 0) {
-            zombieMove = 0;
-        }
-        else {
-            if (rand() % 100 < prob) {
-                zombieMove = -1;
-            }
-            else {
-                zombieMove = 0;
-            }
-        }
-        int zombiePos = prevZombiePos + zombieMove;
-
-        // 열차 상태 출력
-        for (int i = 0; i < trainLen; i++) {
-            printf("#");
-        }
-        printf("\n");
-
-        printf("#");
-        for (int i = 1; i < trainLen - 1; i++) {
-            if (i == citizenPos) {
-                printf("C");
-            }
-            else if (i == zombiePos) {
-                printf("Z");
-            }
-            else if (i == trainLen - 2) {
-                printf("M");
-            }
-            else {
-                printf(" ");
-            }
-        }
-        printf("#\n");
-
-        for (int i = 0; i < trainLen; i++) {
-            printf("#");
-        }
-        printf("\n");
-
-        // 시민, 좀비 상태 출력
-        if (citizenPos == prevCitizenPos) {
-            printf("시민 제자리 : %d\n", citizenPos);
-        }
-        else {
-            printf("시민 이동 : %d -> %d\n", prevCitizenPos, citizenPos);
-        }
-
-        if (zombiePos == prevZombiePos) {
-            if (zombieMoveCounter % 2 == 0) {
-                printf("좀비 이동 불가 : %d\n", zombiePos);
-            }
-            else {
-                printf("좀비 제자리 : %d\n", zombiePos);
-            }
-        }
-        else {
-            printf("좀비 이동 : %d -> %d\n", prevZombiePos, zombiePos);
-        }
-
-        if (citizenPos <= 1) {
-            printf("SUCCESS!\n");
-            printf("citizen(s) escaped to the next train\n");
-            break;
-        }
-
-        if (citizenPos == zombiePos - 1) {
-            printf("GAME OVER!\n");
-            printf("citizen(s) has(have) been attacked by a zombie\n");
-            break;
-        }
-
-        prevCitizenPos = citizenPos;
-        prevZombiePos = zombiePos;
-
-        zombieMoveCounter++;
-
-        Sleep(4000);
+int state() {
+    // 시민과 좀비의 상태 출력
+    if (citizenPos == prevCitizenPos) {
+        printf("시민 제자리 : %d\n", citizenPos);
     }
-    Sleep(4000);
+    else {
+        printf("시민 이동 : %d -> %d\n", prevCitizenPos, citizenPos);
+    }
 
-    // 아웃트로
+    if (zombiePos == prevZombiePos) {
+        if (zombieMoveCounter % 2 == 0) {
+            printf("좀비 이동 불가 : %d\n", zombiePos);
+        }
+        else {
+            printf("좀비 제자리 : %d\n", zombiePos);
+        }
+    }
+    else {
+        printf("좀비 이동 : %d -> %d\n", prevZombiePos, zombiePos);
+    }
+
+    // 게임 성공 조건 확인
+    if (citizenPos <= 1) {
+        printf("SUCCESS!\n");
+        printf("citizen(s) escaped to the next train\n");
+        return 0;  // 게임 루프 종료
+    }
+
+    // 게임 오버 조건 확인
+    if (citizenPos == zombiePos - 1) {
+        printf("GAME OVER!\n");
+        printf("citizen(s) has(have) been attacked by a zombie\n");
+        return 0;  // 게임 루프 종료
+    }
+
+    prevCitizenPos = citizenPos;
+    prevZombiePos = zombiePos;
+
+    zombieMoveCounter++;
+    return 1;  // 게임 루프 계속
+}
+
+void outtro() {
+    // 아웃트로 메시지
     printf("**********************\n");
     printf("게임이 종료되었습니다.\n");
     printf("**********************\n");
+}
+int main() {
+    srand(time(NULL));  // 랜덤 시드 설정
 
-    Sleep(4000);
+    intro();  // 인트로 호출
 
+    firsttrain(trainLen, prob);  // 초기 열차 상태 설정
+
+    while (1) {
+        move();  // 이동 계산
+
+        zombiePos = prevZombiePos + zombieMove;
+
+        nexttrain();  // 다음 열차 상태 출력
+
+        if (!state()) {  // state() 함수의 반환 값을 확인하여 루프 제어
+            break;  // 루프 종료
+        }
+    }
+    outtro();
     return 0;
 }
