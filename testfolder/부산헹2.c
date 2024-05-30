@@ -12,8 +12,8 @@
 #define AGGRO_MIN 0
 #define AGGRO_MAX 5
 
-#define MOVE_LEET 1
-#define MOVE_SRAY 0
+#define MOVE_LEFT 1
+#define MOVE_STAY 0
 
 #define ATK_NONE 0
 #define ATK_CITIZEN 1
@@ -29,9 +29,9 @@ int prevCitizenPos, prevZombiePos, prevmpos;
 int citizenMove, zombieMove, mMove;
 int zombieMoveCounter = 1;
 int citizenPos, zombiePos, mpos;
-int caggro = 1;
-int maggro = 1;
-char c[100];
+int caggro = 0;
+int maggro = 0;
+char c[10];
 
 void intro();
 int firsttrain(int, int);
@@ -40,6 +40,7 @@ void nexttrain();
 int state();  // 루프를 제어하기 위해 int 반환
 void minput();
 void mstate();
+void madongseokmove();
 void outtro();
 
 void intro() {
@@ -115,9 +116,17 @@ void move() {
     // 시민 이동
     if (rand() % 100 < prob) {
         citizenMove = 0;
+        caggro -= 1;
+        if (caggro < AGGRO_MIN) {
+            caggro = AGGRO_MIN;
+        }
     }
     else {
         citizenMove = -1;
+        caggro += 1;
+        if (caggro > AGGRO_MAX) {
+            caggro = AGGRO_MAX;
+        }
     }
     citizenPos = prevCitizenPos + citizenMove;
 
@@ -126,13 +135,14 @@ void move() {
         zombieMove = 0;
     }
     else {
-        if (rand() % 100 < prob) {
-            zombieMove = -1;
+        if (caggro >= maggro) {
+            zombieMove -= 1;
         }
         else {
-            zombieMove = 0;
+            zombieMove += 1;
         }
     }
+    
     mpos = prevmpos;
 }
 
@@ -225,12 +235,30 @@ void minput() {
     }
 }
 
-void mstate() {
-    if (mMove == 0) {
-        printf("마동석: stay %d(aggro: %d, stamina: %d)\n", prevmpos, maggro, mstamina);
+void madongseokmove() {
+    if (mMove == MOVE_STAY) {
+        c[10] = "stay";
+        maggro -= 1;
+        if (maggro < AGGRO_MIN) {
+            maggro = AGGRO_MIN;
+        }
     }
     else {
-        printf("마동석: left %d(aggro: %d, stamina: %d)\n", prevmpos, maggro, mstamina);
+        c[10] ="left";
+        maggro += 1;
+        if (maggro > AGGRO_MAX) {
+            maggro = AGGRO_MAX;
+        }
+    }
+}
+    
+
+void mstate() {
+    if (mMove == 0) {
+        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c,prevmpos, maggro, mstamina);
+    }
+    else {
+        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c,prevmpos, maggro, mstamina);
     }
 }
 
@@ -260,12 +288,16 @@ int main() {
         }
         printf("\n");
         minput();
+        madongseokmove();
 
         prevmpos = mpos;
         nexttrain();
         printf("\n");
         mstate();
-       
+        printf("\n");
+
+        // 행동
+        
     }
 
     outtro();
