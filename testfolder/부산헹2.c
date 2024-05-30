@@ -1,3 +1,4 @@
+//1-1
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -116,6 +117,7 @@ int firsttrain(int trainLen, int prob) {
 }
 
 void move() {
+    //1-4
     // 시민 이동
     if (rand() % 100 < prob) {
         citizenMove = 0;
@@ -133,29 +135,31 @@ void move() {
     }
     citizenPos = prevCitizenPos + citizenMove;
 
+    //1-5
     // 좀비 이동
     if (zombiePos + 1 == mpos) {
         zombieMove = 0;
     }
     else {
         if (zombieMoveCounter % 2 == 0) {
-                zombieMove = 0;
+            zombieMove = 0;
+        }
+        else {
+            if (caggro >= maggro) {
+                zombieMove -= 1;
             }
             else {
-                if (caggro >= maggro) {
-                    zombieMove -= 1;
-                }
-                else {
-                    zombieMove += 1;
-                }
+                zombieMove += 1;
             }
+        }
     }
-    
-    
+
+
     mpos = prevmpos;
 }
 
 void nexttrain() {
+    // 1-2 
     // 열차 상태 출력
     for (int i = 0; i < trainLen; i++) {
         printf("#");
@@ -186,6 +190,7 @@ void nexttrain() {
 }
 
 int state() {
+    //1-3
     // 시민과 좀비의 상태 출력
     if (citizenPos == prevCitizenPos) {
         printf("시민 제자리 : %d\n", citizenPos);
@@ -213,8 +218,6 @@ int state() {
         return 0;  // 게임 루프 종료
     }
 
-    // 게임 오버 조건 확인
-
 
     prevCitizenPos = citizenPos;
     prevZombiePos = zombiePos;
@@ -241,7 +244,7 @@ void minput() {
         }
         else {
             mpos = prevmpos - 1;
-        } 
+        }
     }
 }
 
@@ -255,7 +258,7 @@ void madongseokmove() {
         }
     }
     else {
-        c[10] ="left";
+        c[10] = "left";
         maggro += 1;
         if (maggro > AGGRO_MAX) {
             maggro = AGGRO_MAX;
@@ -275,7 +278,7 @@ void zAct() {
                 return 0;
             }
         }
-        else{
+        else {
             if (citizenPos == zombiePos - 1) {
                 printf("citizen does nothing.\n");
                 printf("GAME OEVER! citizen dead...\n");
@@ -314,18 +317,18 @@ void mAct() {
             mstamina = mstamina - 1;
             zombieMoveCounter = 2;
         }
-        
+
     }
 
 }
-    
+
 
 void mstate() {
     if (mMove == 0) {
-        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c,prevmpos, maggro, mstamina);
+        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c, prevmpos, maggro, mstamina);
     }
     else {
-        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c,prevmpos, maggro, mstamina);
+        printf("마동석: %s %d(aggro: %d, stamina: %d)\n", c, prevmpos, maggro, mstamina);
     }
 }
 
