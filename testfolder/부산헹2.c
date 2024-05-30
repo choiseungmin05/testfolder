@@ -41,6 +41,8 @@ int state();  // 루프를 제어하기 위해 int 반환
 void minput();
 void mstate();
 void madongseokmove();
+void mAct();
+void zAct();
 void outtro();
 
 void intro() {
@@ -131,17 +133,23 @@ void move() {
     citizenPos = prevCitizenPos + citizenMove;
 
     // 좀비 이동
-    if (zombieMoveCounter % 2 == 0) {
+    if (zombiePos + 1 == mpos) {
         zombieMove = 0;
     }
     else {
-        if (caggro >= maggro) {
-            zombieMove -= 1;
-        }
-        else {
-            zombieMove += 1;
-        }
+        if (zombieMoveCounter % 2 == 0) {
+                zombieMove = 0;
+            }
+            else {
+                if (caggro >= maggro) {
+                    zombieMove -= 1;
+                }
+                else {
+                    zombieMove += 1;
+                }
+            }
     }
+    
     
     mpos = prevmpos;
 }
@@ -205,11 +213,7 @@ int state() {
     }
 
     // 게임 오버 조건 확인
-    if (citizenPos == zombiePos - 1) {
-        printf("GAME OVER!\n");
-        printf("citizen(s) has(have) been attacked by a zombie\n");
-        return 0;  // 게임 루프 종료
-    }
+
 
     prevCitizenPos = citizenPos;
     prevZombiePos = zombiePos;
@@ -231,9 +235,15 @@ void minput() {
         mpos = prevmpos;
     }
     else {
-        mpos = prevmpos - 1;
+        if (mpos == zombiePos + 1) {
+            mpos = prevmpos;
+        }
+        else {
+            mpos = prevmpos - 1;
+        } 
     }
 }
+
 
 void madongseokmove() {
     if (mMove == MOVE_STAY) {
@@ -250,6 +260,29 @@ void madongseokmove() {
             maggro = AGGRO_MAX;
         }
     }
+}
+
+void zAct() {
+    if (zombiePos - 1 == citizenPos || zombiePos + 1 == mpos) {
+        if (zombiePos - 1 == citizenPos) {
+            if (citizenPos == zombiePos - 1) {
+                printf("citizen does nothing.\n");
+                printf("GAME OEVER! citizen dead...\n");
+                return 0;  // 게임 루프 종료
+            }
+        }
+    }
+    else {
+        printf("citizen does nothing.\n");
+        printf("zombie attacked nobody\n");
+    }
+}
+
+void mAct() {
+    if (mpos == zombiePos + 1) {
+        mstamina = mstamina - 1;
+    }
+
 }
     
 
@@ -289,15 +322,14 @@ int main() {
         printf("\n");
         minput();
         madongseokmove();
+        mAct();
 
         prevmpos = mpos;
         nexttrain();
         printf("\n");
         mstate();
         printf("\n");
-
-        // 행동
-        
+        zAct();
     }
 
     outtro();
