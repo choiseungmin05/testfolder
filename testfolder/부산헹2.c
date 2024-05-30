@@ -20,7 +20,7 @@
 #define ATK_DONGSEOK 2
 
 #define ACTION_REST 0
-#define ACTION_PROVOKE 1
+#define ACTION_PROVO 1
 #define ACTION_PULL 2
 
 // 전역 변수 선언
@@ -32,6 +32,7 @@ int citizenPos, zombiePos, mpos;
 int caggro = 0;
 int maggro = 0;
 char c[10];
+int mA;
 
 void intro();
 int firsttrain(int, int);
@@ -264,11 +265,24 @@ void madongseokmove() {
 
 void zAct() {
     if (zombiePos - 1 == citizenPos || zombiePos + 1 == mpos) {
-        if (zombiePos - 1 == citizenPos) {
+        if (zombiePos - 1 == citizenPos && zombiePos + 1 == mpos) {
+            if (maggro > caggro) {
+                mstamina = mstamina - 1;
+            }
+            else {
+                printf("citizen does nothing.\n");
+                printf("GAME OEVER! citizen dead...\n");
+                return 0;
+            }
+        }
+        else{
             if (citizenPos == zombiePos - 1) {
                 printf("citizen does nothing.\n");
                 printf("GAME OEVER! citizen dead...\n");
                 return 0;  // 게임 루프 종료
+            }
+            else {
+
             }
         }
     }
@@ -280,7 +294,27 @@ void zAct() {
 
 void mAct() {
     if (mpos == zombiePos + 1) {
-        mstamina = mstamina - 1;
+        while (1) {
+            printf("madongseok action(0.rest, 1.provoke, 2. pull)>>");
+            scanf_s("%d", &mA);
+
+            if (mA == ACTION_REST || mA == ACTION_PROVO || mA == ACTION_PULL) {
+                break;
+            }
+        }
+    }if (mA == ACTION_REST) {
+        maggro = maggro - 1;
+    }
+    else if (mA == ACTION_PROVO) {
+        maggro = AGGRO_MAX;
+    }
+    else {
+        if (rand() % 100 > prob) {
+            maggro = maggro + 2;
+            mstamina = mstamina - 1;
+            zombieMoveCounter = 2;
+        }
+        
     }
 
 }
