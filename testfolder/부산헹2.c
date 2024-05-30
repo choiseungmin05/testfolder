@@ -24,17 +24,22 @@
 #define ACTION_PULL 2
 
 // 전역 변수 선언
-int trainLen, prob;
-int prevCitizenPos, prevZombiePos;
-int citizenMove, zombieMove;
+int trainLen, mstamina, prob;
+int prevCitizenPos, prevZombiePos, prevmpos;
+int citizenMove, zombieMove, mMove;
 int zombieMoveCounter = 1;
-int citizenPos, zombiePos;
+int citizenPos, zombiePos, mpos;
+int caggro = 1;
+int maggro = 1;
+char c[100];
 
 void intro();
 int firsttrain(int, int);
 void move();
 void nexttrain();
 int state();  // 루프를 제어하기 위해 int 반환
+void minput();
+void mstate();
 void outtro();
 
 void intro() {
@@ -42,28 +47,34 @@ void intro() {
     printf("**************************\n");
     printf("잠시 후 게임을 시작합니다.\n");
     printf("**************************\n");
+    while (1) {
+        printf("열차의 길이를 입력하세요 (%d에서 %d까지): ", LEN_MIN, LEN_MAX);
+        scanf_s("%d", &trainLen);
 
-    Sleep(1500);
+        if (trainLen >= LEN_MIN && trainLen <= LEN_MAX) {
+            break;
+        }
+    }
 
-    // 열차 길이 입력 받기
-    printf("열차의 길이를 입력하세요 (%d에서 %d까지): ", LEN_MIN, LEN_MAX);
-    scanf_s("%d", &trainLen);
+    while (1) {
+        printf("마동석 체력(%d에서 %d까지): ", STM_MIN, STM_MAX);
+        scanf_s("%d", &mstamina);
 
-    // 입력 길이가 범위 밖이면 종료
-    if (trainLen < LEN_MIN || trainLen > LEN_MAX) {
-        printf("열차의 길이는 %d에서 %d까지만 가능합니다.\n", LEN_MIN, LEN_MAX);
-        exit(1);
+        if (mstamina >= STM_MIN && mstamina <= STM_MAX) {
+            break;
+        }
     }
 
     // 확률 입력 받기
-    printf("확률을 입력하세요 (%d에서 %d까지): ", PROB_MIN, PROB_MAX);
-    scanf_s("%d", &prob);
+    while (1) {
+        printf("확률을 입력하세요 (%d에서 %d까지): ", PROB_MIN, PROB_MAX);
+        scanf_s("%d", &prob);
 
-    // 입력 확률이 범위 밖이면 종료
-    if (prob < PROB_MIN || prob > PROB_MAX) {
-        printf("확률은 %d에서 %d까지만 가능합니다.\n", PROB_MIN, PROB_MAX);
-        exit(1);
+        if (prob >= PROB_MIN && prob <= PROB_MAX) {
+            break;
+        }
     }
+
 }
 
 int firsttrain(int trainLen, int prob) {
@@ -97,6 +108,7 @@ int firsttrain(int trainLen, int prob) {
 
     prevCitizenPos = trainLen - 6;
     prevZombiePos = trainLen - 3;
+    prevmpos = trainLen - 2;
 }
 
 void move() {
@@ -121,6 +133,7 @@ void move() {
             zombieMove = 0;
         }
     }
+    mpos = prevmpos;
 }
 
 void nexttrain() {
@@ -138,7 +151,7 @@ void nexttrain() {
         else if (i == zombiePos) {
             printf("Z");
         }
-        else if (i == trainLen - 2) {
+        else if (i == mpos) {
             printf("M");
         }
         else {
@@ -159,7 +172,7 @@ int state() {
         printf("시민 제자리 : %d\n", citizenPos);
     }
     else {
-        printf("시민 이동 : %d -> %d\n", prevCitizenPos, citizenPos);
+        printf("시민 이동 : %d -> %d (aggro: %d)\n", prevCitizenPos, citizenPos, caggro);
     }
 
     if (zombiePos == prevZombiePos) {
@@ -195,6 +208,32 @@ int state() {
     return 1;  // 게임 루프 계속
 }
 
+void minput() {
+    while (1) {
+        printf("마동석 move(0:stay, 1:left)>>");
+        scanf_s("%d", &mMove);
+
+        if (mMove == 0 || mMove == 1) {
+            break;
+        }
+    }
+    if (mMove == 0) {
+        mpos = prevmpos;
+    }
+    else {
+        mpos = prevmpos - 1;
+    }
+}
+
+void mstate() {
+    if (mMove == 0) {
+        printf("마동석: stay %d(aggro: %d, stamina: %d)\n", prevmpos, maggro, mstamina);
+    }
+    else {
+        printf("마동석: left %d(aggro: %d, stamina: %d)\n", prevmpos, maggro, mstamina);
+    }
+}
+
 void outtro() {
     // 아웃트로 메시지
     printf("**********************\n");
@@ -214,11 +253,21 @@ int main() {
         zombiePos = prevZombiePos + zombieMove;
 
         nexttrain();  // 다음 열차 상태 출력
+        printf("\n");
 
         if (!state()) {  // state() 함수의 반환 값을 확인하여 루프 제어
             break;  // 루프 종료
         }
+        printf("\n");
+        minput();
+
+        prevmpos = mpos;
+        nexttrain();
+        printf("\n");
+        mstate();
+       
     }
+
     outtro();
     return 0;
 }
